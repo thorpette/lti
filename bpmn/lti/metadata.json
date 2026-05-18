@@ -1,17 +1,19 @@
 {
-  "id": "dc8d034e-421f-49af-afac-8e91a61b94db",
-  "name": "lti",
-  "description": "",
+  "id": "3ebbea31-7094-444f-b23e-e0e17e37023d",
+  "name": "LTI",
+  "description": "Proyecto master",
   "color": "#7C3AED",
-  "icon": "rocket",
-  "tags": [],
+  "icon": "folder",
+  "tags": [
+    "master"
+  ],
   "diagram_ids": [],
   "github_repo_url": "https://github.com/thorpette/lti",
   "github_default_branch": "main",
   "github_sync_path": "bpmn/",
-  "github_last_sync": "2026-05-18T12:43:19.380145+00:00",
+  "github_last_sync": null,
   "created_by": "oscar.hidalgo.puertas@gmail.com",
-  "created_at": "2026-05-18T12:37:25.877680+00:00",
-  "updated_at": "2026-05-18T12:37:25.877682+00:00",
-  "exported_at": "2026-05-18T12:43:57.304891+00:00"
+  "created_at": "2026-05-18T17:13:38.543739+00:00",
+  "updated_at": "2026-05-18T17:13:38.543741+00:00",
+  "exported_at": "2026-05-18T17:18:44.804790+00:00"
 }
