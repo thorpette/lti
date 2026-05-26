@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_AddCandidate" name="Añadir Nuevo Candidato" isExecutable="true">
+    <bpmn:startEvent id="Start_1" name="Reclutador accede al Dashboard">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_ClickAdd" name="Clic en Añadir Candidato">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_FillRequired" name="Completar campos obligatorios (Nombre, Apellido, Email, Telefono)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_FillOptional" name="Completar campos opcionales (Direccion, Educacion, Experiencia)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_UploadCV" name="Cargar CV (PDF/DOC/DOCX, max 5MB)">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_ValidateClient" name="Validacion client-side (email, campos obligatorios)">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="GW_ValidClient" name="Validacion OK?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_ShowErrors" name="Mostrar errores de validacion">
+      <bpmn:incoming>Flow_7_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_BackToForm</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_SendAPI" name="Enviar POST /candidates al Backend">
+      <bpmn:incoming>Flow_7_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_ServerValidate" name="Validacion server-side y sanitizacion">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_CheckDuplicate" name="Verificar email duplicado en BD">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="GW_Duplicate" name="Email ya existe?">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11_New</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11_Dup</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_ErrorDuplicate" name="Retornar error: El correo ya existe">
+      <bpmn:incoming>Flow_11_Dup</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToDupEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_UploadStorage" name="Almacenar CV en Cloud Storage">
+      <bpmn:incoming>Flow_11_New</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_SaveDB" name="Guardar candidato en Base de Datos">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_ShowSuccess" name="Toast: Candidato registrado correctamente">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_Success" name="Candidato Registrado">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="End_Duplicate" name="Registro Rechazado (Duplicado)">
+      <bpmn:incoming>Flow_ToDupEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="Task_ClickAdd" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_ClickAdd" targetRef="Task_FillRequired" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_FillRequired" targetRef="Task_FillOptional" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_FillOptional" targetRef="Task_UploadCV" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_UploadCV" targetRef="Task_ValidateClient" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_ValidateClient" targetRef="GW_ValidClient" />
+    <bpmn:sequenceFlow id="Flow_7_Yes" name="Si" sourceRef="GW_ValidClient" targetRef="Task_SendAPI" />
+    <bpmn:sequenceFlow id="Flow_7_No" name="No" sourceRef="GW_ValidClient" targetRef="Task_ShowErrors" />
+    <bpmn:sequenceFlow id="Flow_BackToForm" sourceRef="Task_ShowErrors" targetRef="Task_FillRequired" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_SendAPI" targetRef="Task_ServerValidate" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_ServerValidate" targetRef="Task_CheckDuplicate" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_CheckDuplicate" targetRef="GW_Duplicate" />
+    <bpmn:sequenceFlow id="Flow_11_New" name="No existe" sourceRef="GW_Duplicate" targetRef="Task_UploadStorage" />
+    <bpmn:sequenceFlow id="Flow_11_Dup" name="Ya existe" sourceRef="GW_Duplicate" targetRef="Task_ErrorDuplicate" />
+    <bpmn:sequenceFlow id="Flow_ToDupEnd" sourceRef="Task_ErrorDuplicate" targetRef="End_Duplicate" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_UploadStorage" targetRef="Task_SaveDB" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_SaveDB" targetRef="Task_ShowSuccess" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_ShowSuccess" targetRef="End_Success" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_AddCandidate">
+      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1"><dc:Bounds x="152" y="232" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ClickAdd_di" bpmnElement="Task_ClickAdd"><dc:Bounds x="240" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FillRequired_di" bpmnElement="Task_FillRequired"><dc:Bounds x="390" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FillOptional_di" bpmnElement="Task_FillOptional"><dc:Bounds x="540" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UploadCV_di" bpmnElement="Task_UploadCV"><dc:Bounds x="690" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidateClient_di" bpmnElement="Task_ValidateClient"><dc:Bounds x="840" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_ValidClient_di" bpmnElement="GW_ValidClient" isMarkerVisible="true"><dc:Bounds x="985" y="225" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ShowErrors_di" bpmnElement="Task_ShowErrors"><dc:Bounds x="960" y="340" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendAPI_di" bpmnElement="Task_SendAPI"><dc:Bounds x="1090" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ServerValidate_di" bpmnElement="Task_ServerValidate"><dc:Bounds x="1240" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CheckDuplicate_di" bpmnElement="Task_CheckDuplicate"><dc:Bounds x="1390" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Duplicate_di" bpmnElement="GW_Duplicate" isMarkerVisible="true"><dc:Bounds x="1535" y="225" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ErrorDuplicate_di" bpmnElement="Task_ErrorDuplicate"><dc:Bounds x="1510" y="340" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UploadStorage_di" bpmnElement="Task_UploadStorage"><dc:Bounds x="1640" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SaveDB_di" bpmnElement="Task_SaveDB"><dc:Bounds x="1790" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ShowSuccess_di" bpmnElement="Task_ShowSuccess"><dc:Bounds x="1940" y="210" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Success_di" bpmnElement="End_Success"><dc:Bounds x="2092" y="232" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Duplicate_di" bpmnElement="End_Duplicate"><dc:Bounds x="1662" y="362" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1"><di:waypoint x="188" y="250" /><di:waypoint x="240" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2"><di:waypoint x="340" y="250" /><di:waypoint x="390" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3"><di:waypoint x="490" y="250" /><di:waypoint x="540" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4"><di:waypoint x="640" y="250" /><di:waypoint x="690" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5"><di:waypoint x="790" y="250" /><di:waypoint x="840" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6"><di:waypoint x="940" y="250" /><di:waypoint x="985" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_Yes_di" bpmnElement="Flow_7_Yes"><di:waypoint x="1035" y="250" /><di:waypoint x="1090" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_No_di" bpmnElement="Flow_7_No"><di:waypoint x="1010" y="275" /><di:waypoint x="1010" y="340" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_BackToForm_di" bpmnElement="Flow_BackToForm"><di:waypoint x="960" y="380" /><di:waypoint x="440" y="380" /><di:waypoint x="440" y="290" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8"><di:waypoint x="1190" y="250" /><di:waypoint x="1240" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9"><di:waypoint x="1340" y="250" /><di:waypoint x="1390" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10"><di:waypoint x="1490" y="250" /><di:waypoint x="1535" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_New_di" bpmnElement="Flow_11_New"><di:waypoint x="1585" y="250" /><di:waypoint x="1640" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_Dup_di" bpmnElement="Flow_11_Dup"><di:waypoint x="1560" y="275" /><di:waypoint x="1560" y="340" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToDupEnd_di" bpmnElement="Flow_ToDupEnd"><di:waypoint x="1610" y="380" /><di:waypoint x="1662" y="380" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12"><di:waypoint x="1740" y="250" /><di:waypoint x="1790" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13"><di:waypoint x="1890" y="250" /><di:waypoint x="1940" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14"><di:waypoint x="2040" y="250" /><di:waypoint x="2092" y="250" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
