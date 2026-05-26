@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_FE" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_Frontend" name="Frontend - Formulario Candidato" isExecutable="true">
+    <bpmn:startEvent id="FE_Start" name="Usuario abre formulario">
+      <bpmn:outgoing>FE_F1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="FE_CheckRole" name="Verificar rol (Recruiter/Admin)">
+      <bpmn:incoming>FE_F1</bpmn:incoming>
+      <bpmn:outgoing>FE_F2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="FE_GW_Role" name="Tiene permisos?">
+      <bpmn:incoming>FE_F2</bpmn:incoming>
+      <bpmn:outgoing>FE_F3_Yes</bpmn:outgoing>
+      <bpmn:outgoing>FE_F3_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="FE_End_NoAccess" name="Acceso denegado">
+      <bpmn:incoming>FE_F3_No</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="FE_RenderForm" name="Renderizar formulario responsive (Mobile/Desktop)">
+      <bpmn:incoming>FE_F3_Yes</bpmn:incoming>
+      <bpmn:outgoing>FE_F4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:parallelGateway id="FE_GW_Parallel" name="Campos en paralelo">
+      <bpmn:incoming>FE_F4</bpmn:incoming>
+      <bpmn:outgoing>FE_P1</bpmn:outgoing>
+      <bpmn:outgoing>FE_P2</bpmn:outgoing>
+      <bpmn:outgoing>FE_P3</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:userTask id="FE_RequiredFields" name="Inputs obligatorios: Nombre*, Apellido*, Email* (regex), Telefono* (mascara)">
+      <bpmn:incoming>FE_P1</bpmn:incoming>
+      <bpmn:outgoing>FE_JP1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="FE_OptionalFields" name="Inputs opcionales: Direccion, Educacion (Typeahead), Experiencia (Typeahead)">
+      <bpmn:incoming>FE_P2</bpmn:incoming>
+      <bpmn:outgoing>FE_JP2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="FE_FileUpload" name="Drag-and-Drop CV (.pdf .doc .docx max 5MB) con previsualizacion">
+      <bpmn:incoming>FE_P3</bpmn:incoming>
+      <bpmn:outgoing>FE_JP3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:parallelGateway id="FE_GW_Join" name="Unir campos">
+      <bpmn:incoming>FE_JP1</bpmn:incoming>
+      <bpmn:incoming>FE_JP2</bpmn:incoming>
+      <bpmn:incoming>FE_JP3</bpmn:incoming>
+      <bpmn:outgoing>FE_F5</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="FE_ValidateAll" name="Validacion real-time (email regex, campos requeridos, tamaño archivo)">
+      <bpmn:incoming>FE_F5</bpmn:incoming>
+      <bpmn:outgoing>FE_F6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="FE_GW_Valid" name="Formulario valido?">
+      <bpmn:incoming>FE_F6</bpmn:incoming>
+      <bpmn:outgoing>FE_F7_Ok</bpmn:outgoing>
+      <bpmn:outgoing>FE_F7_Err</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="FE_ShowInline" name="Mostrar errores inline bajo cada campo">
+      <bpmn:incoming>FE_F7_Err</bpmn:incoming>
+      <bpmn:outgoing>FE_BackToForm</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="FE_SetLoading" name="Activar loading state y deshabilitar boton">
+      <bpmn:incoming>FE_F7_Ok</bpmn:incoming>
+      <bpmn:outgoing>FE_F8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="FE_PostAPI" name="POST /candidates (FormData con archivo)">
+      <bpmn:incoming>FE_F8</bpmn:incoming>
+      <bpmn:outgoing>FE_F9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="FE_GW_Response" name="Respuesta API?">
+      <bpmn:incoming>FE_F9</bpmn:incoming>
+      <bpmn:outgoing>FE_F10_201</bpmn:outgoing>
+      <bpmn:outgoing>FE_F10_409</bpmn:outgoing>
+      <bpmn:outgoing>FE_F10_500</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="FE_Toast201" name="Toast exito: Candidato registrado correctamente">
+      <bpmn:incoming>FE_F10_201</bpmn:incoming>
+      <bpmn:outgoing>FE_F11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="FE_Toast409" name="Toast error: El correo ya existe">
+      <bpmn:incoming>FE_F10_409</bpmn:incoming>
+      <bpmn:outgoing>FE_BackTo409</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="FE_Toast500" name="Toast error: Error de conexion">
+      <bpmn:incoming>FE_F10_500</bpmn:incoming>
+      <bpmn:outgoing>FE_BackTo500</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="FE_End_Success" name="Redirigir a lista de candidatos">
+      <bpmn:incoming>FE_F11</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="FE_F1" sourceRef="FE_Start" targetRef="FE_CheckRole" />
+    <bpmn:sequenceFlow id="FE_F2" sourceRef="FE_CheckRole" targetRef="FE_GW_Role" />
+    <bpmn:sequenceFlow id="FE_F3_Yes" name="Si" sourceRef="FE_GW_Role" targetRef="FE_RenderForm" />
+    <bpmn:sequenceFlow id="FE_F3_No" name="No" sourceRef="FE_GW_Role" targetRef="FE_End_NoAccess" />
+    <bpmn:sequenceFlow id="FE_F4" sourceRef="FE_RenderForm" targetRef="FE_GW_Parallel" />
+    <bpmn:sequenceFlow id="FE_P1" sourceRef="FE_GW_Parallel" targetRef="FE_RequiredFields" />
+    <bpmn:sequenceFlow id="FE_P2" sourceRef="FE_GW_Parallel" targetRef="FE_OptionalFields" />
+    <bpmn:sequenceFlow id="FE_P3" sourceRef="FE_GW_Parallel" targetRef="FE_FileUpload" />
+    <bpmn:sequenceFlow id="FE_JP1" sourceRef="FE_RequiredFields" targetRef="FE_GW_Join" />
+    <bpmn:sequenceFlow id="FE_JP2" sourceRef="FE_OptionalFields" targetRef="FE_GW_Join" />
+    <bpmn:sequenceFlow id="FE_JP3" sourceRef="FE_FileUpload" targetRef="FE_GW_Join" />
+    <bpmn:sequenceFlow id="FE_F5" sourceRef="FE_GW_Join" targetRef="FE_ValidateAll" />
+    <bpmn:sequenceFlow id="FE_F6" sourceRef="FE_ValidateAll" targetRef="FE_GW_Valid" />
+    <bpmn:sequenceFlow id="FE_F7_Ok" name="Valido" sourceRef="FE_GW_Valid" targetRef="FE_SetLoading" />
+    <bpmn:sequenceFlow id="FE_F7_Err" name="Invalido" sourceRef="FE_GW_Valid" targetRef="FE_ShowInline" />
+    <bpmn:sequenceFlow id="FE_BackToForm" sourceRef="FE_ShowInline" targetRef="FE_RenderForm" />
+    <bpmn:sequenceFlow id="FE_F8" sourceRef="FE_SetLoading" targetRef="FE_PostAPI" />
+    <bpmn:sequenceFlow id="FE_F9" sourceRef="FE_PostAPI" targetRef="FE_GW_Response" />
+    <bpmn:sequenceFlow id="FE_F10_201" name="201 Created" sourceRef="FE_GW_Response" targetRef="FE_Toast201" />
+    <bpmn:sequenceFlow id="FE_F10_409" name="409 Conflict" sourceRef="FE_GW_Response" targetRef="FE_Toast409" />
+    <bpmn:sequenceFlow id="FE_F10_500" name="500 Error" sourceRef="FE_GW_Response" targetRef="FE_Toast500" />
+    <bpmn:sequenceFlow id="FE_F11" sourceRef="FE_Toast201" targetRef="FE_End_Success" />
+    <bpmn:sequenceFlow id="FE_BackTo409" sourceRef="FE_Toast409" targetRef="FE_RenderForm" />
+    <bpmn:sequenceFlow id="FE_BackTo500" sourceRef="FE_Toast500" targetRef="FE_RenderForm" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_FE">
+    <bpmndi:BPMNPlane id="BPMNPlane_FE" bpmnElement="Process_Frontend">
+      <bpmndi:BPMNShape id="FE_Start_di" bpmnElement="FE_Start"><dc:Bounds x="152" y="282" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_CheckRole_di" bpmnElement="FE_CheckRole"><dc:Bounds x="240" y="260" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_GW_Role_di" bpmnElement="FE_GW_Role" isMarkerVisible="true"><dc:Bounds x="385" y="275" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_End_NoAccess_di" bpmnElement="FE_End_NoAccess"><dc:Bounds x="392" y="412" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_RenderForm_di" bpmnElement="FE_RenderForm"><dc:Bounds x="490" y="260" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_GW_Parallel_di" bpmnElement="FE_GW_Parallel"><dc:Bounds x="635" y="275" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_RequiredFields_di" bpmnElement="FE_RequiredFields"><dc:Bounds x="730" y="160" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_OptionalFields_di" bpmnElement="FE_OptionalFields"><dc:Bounds x="730" y="260" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_FileUpload_di" bpmnElement="FE_FileUpload"><dc:Bounds x="730" y="360" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_GW_Join_di" bpmnElement="FE_GW_Join"><dc:Bounds x="875" y="275" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_ValidateAll_di" bpmnElement="FE_ValidateAll"><dc:Bounds x="970" y="260" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_GW_Valid_di" bpmnElement="FE_GW_Valid" isMarkerVisible="true"><dc:Bounds x="1115" y="275" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_ShowInline_di" bpmnElement="FE_ShowInline"><dc:Bounds x="1090" y="410" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_SetLoading_di" bpmnElement="FE_SetLoading"><dc:Bounds x="1220" y="260" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_PostAPI_di" bpmnElement="FE_PostAPI"><dc:Bounds x="1370" y="260" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_GW_Response_di" bpmnElement="FE_GW_Response" isMarkerVisible="true"><dc:Bounds x="1515" y="275" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_Toast201_di" bpmnElement="FE_Toast201"><dc:Bounds x="1610" y="160" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_Toast409_di" bpmnElement="FE_Toast409"><dc:Bounds x="1610" y="260" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_Toast500_di" bpmnElement="FE_Toast500"><dc:Bounds x="1610" y="360" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FE_End_Success_di" bpmnElement="FE_End_Success"><dc:Bounds x="1762" y="182" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="FE_F1_di" bpmnElement="FE_F1"><di:waypoint x="188" y="300" /><di:waypoint x="240" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F2_di" bpmnElement="FE_F2"><di:waypoint x="340" y="300" /><di:waypoint x="385" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F3_Yes_di" bpmnElement="FE_F3_Yes"><di:waypoint x="435" y="300" /><di:waypoint x="490" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F3_No_di" bpmnElement="FE_F3_No"><di:waypoint x="410" y="325" /><di:waypoint x="410" y="412" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F4_di" bpmnElement="FE_F4"><di:waypoint x="590" y="300" /><di:waypoint x="635" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_P1_di" bpmnElement="FE_P1"><di:waypoint x="660" y="275" /><di:waypoint x="660" y="200" /><di:waypoint x="730" y="200" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_P2_di" bpmnElement="FE_P2"><di:waypoint x="685" y="300" /><di:waypoint x="730" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_P3_di" bpmnElement="FE_P3"><di:waypoint x="660" y="325" /><di:waypoint x="660" y="400" /><di:waypoint x="730" y="400" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_JP1_di" bpmnElement="FE_JP1"><di:waypoint x="830" y="200" /><di:waypoint x="900" y="200" /><di:waypoint x="900" y="275" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_JP2_di" bpmnElement="FE_JP2"><di:waypoint x="830" y="300" /><di:waypoint x="875" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_JP3_di" bpmnElement="FE_JP3"><di:waypoint x="830" y="400" /><di:waypoint x="900" y="400" /><di:waypoint x="900" y="325" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F5_di" bpmnElement="FE_F5"><di:waypoint x="925" y="300" /><di:waypoint x="970" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F6_di" bpmnElement="FE_F6"><di:waypoint x="1070" y="300" /><di:waypoint x="1115" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F7_Ok_di" bpmnElement="FE_F7_Ok"><di:waypoint x="1165" y="300" /><di:waypoint x="1220" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F7_Err_di" bpmnElement="FE_F7_Err"><di:waypoint x="1140" y="325" /><di:waypoint x="1140" y="410" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_BackToForm_di" bpmnElement="FE_BackToForm"><di:waypoint x="1090" y="450" /><di:waypoint x="540" y="450" /><di:waypoint x="540" y="340" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F8_di" bpmnElement="FE_F8"><di:waypoint x="1320" y="300" /><di:waypoint x="1370" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F9_di" bpmnElement="FE_F9"><di:waypoint x="1470" y="300" /><di:waypoint x="1515" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F10_201_di" bpmnElement="FE_F10_201"><di:waypoint x="1540" y="275" /><di:waypoint x="1540" y="200" /><di:waypoint x="1610" y="200" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F10_409_di" bpmnElement="FE_F10_409"><di:waypoint x="1565" y="300" /><di:waypoint x="1610" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F10_500_di" bpmnElement="FE_F10_500"><di:waypoint x="1540" y="325" /><di:waypoint x="1540" y="400" /><di:waypoint x="1610" y="400" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_F11_di" bpmnElement="FE_F11"><di:waypoint x="1710" y="200" /><di:waypoint x="1762" y="200" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_BackTo409_di" bpmnElement="FE_BackTo409"><di:waypoint x="1660" y="340" /><di:waypoint x="1660" y="500" /><di:waypoint x="540" y="500" /><di:waypoint x="540" y="340" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="FE_BackTo500_di" bpmnElement="FE_BackTo500"><di:waypoint x="1660" y="440" /><di:waypoint x="1660" y="530" /><di:waypoint x="540" y="530" /><di:waypoint x="540" y="340" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
