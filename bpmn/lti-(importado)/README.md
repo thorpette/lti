@@ -1,9 +1,9 @@
 # LTI (importado)
 
-Plataforma LTI de gestion de talento. Modela el flujo end-to-end de registro de candidatos con frontend responsive, backend seguro (JWT + RBAC), validacion en cliente y servidor, anti-duplicados, almacenamiento de CV en Cloud Storage y auditoria.
+Applicant Tracking System - Sistema de seguimiento de candidatos
 
-**Tags:** recruiting, lti, candidates, talent, rbac
+**Tags:** LTI, ATS, recruitment
 
-**Created:** 2026-05-25T08:10:39.825955+00:00
+**Created:** 2026-05-27T18:17:00.412477+00:00
 
-**Updated:** 2026-05-25T08:10:39.825955+00:00
+**Updated:** 2026-05-27T18:17:00.412477+00:00
