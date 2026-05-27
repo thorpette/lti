@@ -1,26 +1,24 @@
 {
-  "id": "79d6a787-153c-4685-8cf6-f5bccc99f312",
+  "id": "9ad8fd6e-05f4-4809-8c09-cbce0a07bc0d",
   "name": "LTI (importado)",
-  "description": "Plataforma LTI de gestion de talento. Modela el flujo end-to-end de registro de candidatos con frontend responsive, backend seguro (JWT + RBAC), validacion en cliente y servidor, anti-duplicados, almacenamiento de CV en Cloud Storage y auditoria.",
-  "color": "#2563EB",
-  "icon": "rocket",
+  "description": "Applicant Tracking System - Sistema de seguimiento de candidatos",
+  "color": "#7C3AED",
+  "icon": "folder",
   "tags": [
-    "recruiting",
-    "lti",
-    "candidates",
-    "talent",
-    "rbac"
+    "LTI",
+    "ATS",
+    "recruitment"
   ],
   "created_by": "oscar.hidalgo.puertas@gmail.com",
-  "created_at": "2026-05-25T08:10:39.825955+00:00",
-  "updated_at": "2026-05-25T08:10:39.825955+00:00",
+  "created_at": "2026-05-27T18:17:00.412477+00:00",
+  "updated_at": "2026-05-27T18:17:00.412477+00:00",
   "diagram_ids": [
-    "fc0f498a-dedc-4fce-ac98-2db176d4cf12",
-    "f669e9e7-b46d-4bf1-a163-c9d114a4f724",
-    "33bce661-0769-4d2e-8799-3cbc4f375b62"
+    "b208ee3e-c1d4-465a-bfed-963d48a50fae",
+    "c6dac7e3-4eb6-4737-a8c8-5b984745acc7",
+    "2db0a06e-51a0-40f5-9cb8-4236fc13252e"
   ],
   "github_default_branch": "main",
   "github_repo_url": "https://github.com/thorpette/lti",
   "github_sync_path": "bpmn/",
-  "exported_at": "2026-05-25T08:11:28.432243+00:00"
+  "exported_at": "2026-05-27T18:18:39.967311+00:00"
 }
